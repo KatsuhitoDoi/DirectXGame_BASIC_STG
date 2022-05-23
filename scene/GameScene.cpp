@@ -13,7 +13,7 @@ GameScene::~GameScene() {
 	delete spriteBG_; // BG
 	delete modelStage_; // ステージ
 	delete modelPlayer_;// プレイヤー
-
+	delete modelBeam_; // ビーム
 }
 
 //初期化 
@@ -46,12 +46,20 @@ void GameScene::Initialize() {
 	worldTransformPlayer_.scale_ = {0.5f, 0.5f, 0.5f};
 	worldTransformPlayer_.Initialize();
 
+	// ビーム
+	textureHandleBeam_ = TextureManager::Load("beam.png");
+	modelBeam_ = Model::Create();
+	worldTransformBeam_.scale_ = {0.3f, 0.3f, 0.3f};
+	worldTransformBeam_.Initialize();
+
 }
 
 //更新
 void GameScene::Update() {
 
 	PlayerUpdate(); // プレイヤー更新
+	BeamUpdate(); // ビーム更新
+	BeamBorn();   // ビーム発生
 
 }
 
@@ -82,6 +90,39 @@ void GameScene::PlayerUpdate() {
 	//行列更新
 	worldTransformPlayer_.UpdateMatrix();
 }
+
+// —------------------------------------------
+// ビーム
+// —------------------------------------------
+
+// ビーム更新
+void GameScene::BeamUpdate() {
+	// 移動
+	BeamMove();
+
+	//行列更新
+	worldTransformBeam_.UpdateMatrix();
+}
+
+// ビーム移動
+void GameScene::BeamMove() {
+
+	//ビームが奥へ移動する。
+	worldTransformBeam_.translation_.z += 0.5f;
+	
+}
+
+// ビーム発生（発射）
+void GameScene::BeamBorn() {
+
+	//スペースキーを押したらビームを発射する
+	if (input_->PushKey(DIK_SPACE)) {
+		
+		//ビーム座標にプレイヤー座標を代入する
+		worldTransformBeam_.translation_.x = worldTransformPlayer_.translation_.x;
+	}
+}
+
 
 //表示
 void GameScene::Draw() {
@@ -119,6 +160,9 @@ void GameScene::Draw() {
 
 	// プレイヤー
 	modelPlayer_->Draw(worldTransformPlayer_, viewProjection_, textureHandlePlayer_);
+
+	// ビーム
+	modelBeam_->Draw(worldTransformPlayer_, viewProjection_, textureHandleBeam_);
 
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
